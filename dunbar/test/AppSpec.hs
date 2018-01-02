@@ -24,7 +24,7 @@ runApp initialState inputs startStep = runState initialState inputs start
 output :: [(String, Friend)] -> [String] -> ConsoleStep (CliState [(String, Friend)]) -> [String]
 output initialState inputs startStep = outputs (runState initialState inputs start)
 
-mainMenu = "Choose option: (n)ew friends; (v)iew friends;"
+mainMenu = "Choose option: (n)ew friends; (v)iew friends; (d)elete friend"
 
 main :: IO ()
 main = hspec $ do

@@ -2,7 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 
 module StoreSpec (
-
+  main
 ) where
 
 import System.Directory (removeFile)

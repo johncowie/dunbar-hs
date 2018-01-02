@@ -14,7 +14,7 @@ import Data.List (sortOn)
 import Control.Monad.State (State, StateT, runStateT, runState)
 
 requestOption :: (F.Store m Friend) => C.ConsoleStep m
-requestOption = C.withOutput "Choose option: (n)ew friends; (v)iew friends;" $ C.inputStep readOption
+requestOption = C.withOutput "Choose option: (n)ew friends; (v)iew friends; (d)elete friend" $ C.inputStep readOption
 
 viewFriends :: (F.Store m Friend) => m (C.ConsoleStep m)
 viewFriends = do
@@ -30,13 +30,21 @@ requestIdToDelete :: (F.Store m Friend) => C.ConsoleStep m
 requestIdToDelete = C.withOutput "Enter ID of friend to delete:" $ C.inputStep readIdToDelete
 
 readIdToDelete :: (F.Store m Friend) => String -> C.ConsoleStep m
-readIdToDelete = undefined
+readIdToDelete s = C.mStep (deleteFriend s)
+
+deleteFriend :: (F.Store m Friend) => String -> m (C.ConsoleStep m)
+deleteFriend s = do
+  deleted <- F.delete s
+  case deleted of
+    (Right (Just friend)) -> return $ C.withOutput ("Deleted: " ++ showName friend) $ C.step requestOption
+    (Right Nothing) -> return $ C.withOutput ("Couldn't find friend with ID: " ++ s) $ C.step requestOption
+    (Left err) -> return $ C.withOutput err $ C.step requestOption
 
 readOption :: (F.Store m Friend) => String -> C.ConsoleStep m
 readOption s = case (toLower . strip . pack $ s) of
   "n" -> requestFirstName
   "v" -> C.mStep viewFriends
-  -- "d" -> requestIdToDelete
+  "d" -> requestIdToDelete
   "q" -> C.terminate
   _ -> C.withOutput "Invalid Option: please try again" $ C.step requestOption
 
