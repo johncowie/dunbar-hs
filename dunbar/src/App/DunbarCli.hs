@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module App.DunbarCli (
   start
@@ -11,16 +12,20 @@ import Store.File (runForFile)
 import Data.Text (strip, toLower, pack)
 import Data.Friend (Friend, newFriend, showName)
 import Data.List (sortOn)
-import Control.Monad.State (State, StateT, runStateT, runState)
+import qualified App.Messages as M
 
 requestOption :: (F.Store m Friend) => C.ConsoleStep m
-requestOption = C.withOutput "Choose option: (n)ew friends; (v)iew friends; (d)elete friend" readOption
+requestOption = C.mStep $ do
+  friends :: Either String [(String, Friend)] <- F.retrieveAll
+  case friends of
+    (Left err) -> return $ C.withOutput err C.terminate
+    (Right _) -> return $ C.withOutput M.mainMenu readOption
 
-viewFriends :: (F.Store m Friend) => m (C.ConsoleStep m)
-viewFriends = do
+viewFriends :: (F.Store m Friend) => C.ConsoleStep m
+viewFriends = C.mStep $ do
   friends <- F.retrieveAll
   case friends of
-    (Left err) -> return $ C.withOutput err requestOption
+    (Left err) -> return $ C.withOutput err C.terminate
     (Right friends) -> return $ C.withOutput (showFriends friends) requestOption
   where showTuple (i, r) = i ++ ": " ++ showName r
         showFriends [] = "<no-friends>"
@@ -29,8 +34,23 @@ viewFriends = do
 requestIdToDelete :: (F.Store m Friend) => C.ConsoleStep m
 requestIdToDelete = C.withOutput "Enter ID of friend to delete:" readIdToDelete
 
+requestIdToShow :: (F.Store m Friend) => C.ConsoleStep m
+requestIdToShow = C.withOutput M.enterFriendId readIdToShow
+
 readIdToDelete :: (F.Store m Friend) => C.ConsoleStep m
 readIdToDelete = C.inputStep $ \s -> C.mStep (deleteFriend s)
+
+readIdToShow :: (F.Store m Friend) => C.ConsoleStep m
+readIdToShow = C.inputStep $ \s -> C.mStep (showFriend s)
+
+showFriend :: (F.Store m Friend) => String -> m (C.ConsoleStep m)
+showFriend i = do
+  friend <- F.retrieve i
+  case friend of
+    (Left err) -> return $ C.withOutput err C.terminate
+    (Right (Just friend)) -> return $ C.withOutput (showName friend) requestOption
+    (Right Nothing) -> return $ C.withOutput (M.friendDoesNotExist i) requestOption
+
 
 deleteFriend :: (F.Store m Friend) => String -> m (C.ConsoleStep m)
 deleteFriend s = do
@@ -43,7 +63,8 @@ deleteFriend s = do
 readOption :: (F.Store m Friend) => C.ConsoleStep m
 readOption = C.inputStep $ \s -> case (toLower . strip . pack $ s) of
   "n" -> requestFirstName
-  "v" -> C.mStep viewFriends
+  "v" -> viewFriends
+  "s" -> requestIdToShow
   "d" -> requestIdToDelete
   "q" -> C.terminate
   _ -> C.withOutput "Invalid Option: please try again" requestOption
