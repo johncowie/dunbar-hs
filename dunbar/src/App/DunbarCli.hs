@@ -70,18 +70,22 @@ readOption = C.inputStep $ \s -> case (toLower . strip . pack $ s) of
   _ -> C.withOutput "Invalid Option: please try again" requestOption
 
 requestFirstName :: (F.Store m Friend) => C.ConsoleStep m
-requestFirstName = C.withOutput "Enter firstname" readFirstName
+requestFirstName = C.withOutput M.enterFirstname readFirstName
 
 readFirstName :: (F.Store m Friend) => C.ConsoleStep m
 readFirstName = C.inputStep $ \firstName -> do
-  C.withOutput ("You entered: " ++ firstName) (requestLastName firstName)
+  case firstName of
+    "" -> C.withOutput M.emptyFirstname requestFirstName
+    _ -> C.withOutput ("You entered: " ++ firstName) (requestLastName firstName)
 
 requestLastName :: (F.Store m Friend) => String -> C.ConsoleStep m
-requestLastName firstName = C.withOutput "Enter lastname" (readLastName firstName)
+requestLastName firstName = C.withOutput M.enterLastname (readLastName firstName)
 
 readLastName :: (F.Store m Friend) => String -> C.ConsoleStep m
 readLastName firstName = C.inputStep $ \lastName -> do
-  C.mStep (storeFriend (newFriend firstName lastName))
+  case lastName of
+    "" -> C.withOutput M.emptyLastname (requestLastName firstName)
+    _ -> C.mStep (storeFriend (newFriend firstName lastName))
 
 storeFriend :: (F.Store m Friend) => Friend -> m (C.ConsoleStep m)
 storeFriend f = do

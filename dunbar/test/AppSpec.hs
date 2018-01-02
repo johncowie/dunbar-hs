@@ -53,16 +53,34 @@ main = hspec $ do
       let friends = [("0", (newFriend "Darth" "Maul"))]
       cliFlow friends [ stdout M.mainMenu
                       , stdin "n"
-                      , stdout "Enter firstname"
+                      , stdout M.enterFirstname
                       , stdin "Darth"
                       , stdout "You entered: Darth"
-                      , stdout "Enter lastname"
+                      , stdout M.enterLastname
                       , stdin "Vadar"
                       , stdout M.mainMenu
                       , stdin "v"
                       , stdout "0: Darth Maul\n1: Darth Vadar\n"
                       , stdout M.mainMenu
                       ]
+
+    it "should re-ask user for input if first name or lastname is empty" $ do
+      cliFlow [] [ stdout M.mainMenu
+                 , stdin "n"
+                 , stdout M.enterFirstname
+                 , stdin ""
+                 , stdout M.emptyFirstname
+                 , stdout M.enterFirstname
+                 , stdin "a"
+                 , stdout "You entered: a"
+                 , stdout M.enterLastname
+                 , stdin ""
+                 , stdout M.emptyLastname
+                 , stdout M.enterLastname
+                 , stdin "b"
+                 , stdout M.mainMenu
+                 ]
+
     it "can delete a friend" $ do
       let friends = [("0", (newFriend "Darth" "Maul")), ("1", (newFriend "Luke" "Skywalker"))]
       cliFlow friends [ stdout M.mainMenu

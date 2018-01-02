@@ -13,3 +13,11 @@ mainMenu = intro ++ (intercalate ("\n" ++ padding) options)
 enterFriendId = "Enter ID of friend to view: "
 
 friendDoesNotExist idS = "Friend does not exist for ID: " ++ idS
+
+enterFirstname = "Enter firstname: "
+
+enterLastname = "Enter lastname: "
+
+emptyFirstname = "Firstname cannot be empty - please try again"
+
+emptyLastname = "Lastname cannot be empty - please try again"
