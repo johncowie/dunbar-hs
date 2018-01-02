@@ -1,0 +1,2 @@
+[ ] pull out functions from cli for generating messages, so that they can be reused in tests
+[X] change console steps to have step specifically for output

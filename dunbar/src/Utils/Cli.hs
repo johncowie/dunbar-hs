@@ -24,50 +24,37 @@ import Utils.List (maybeHead, maybeTail)
 import Store.File (SingleFileIO)
 import Control.Monad.Trans (lift)
 
-data NextStep m = InputStep  (String -> ConsoleStep m) |
-                  Transition (ConsoleStep m) |
-                  TransitionM (m (ConsoleStep m)) |
-                  Termination
+data ConsoleStep m = InputStep  (String -> ConsoleStep m) |
+                     OutputStep String (ConsoleStep m) |
+                     Transition (ConsoleStep m) |
+                     TransitionM (m (ConsoleStep m)) |
+                     Termination
 
-type Output = Maybe String
-
-data ConsoleStep m = ConsoleStep Output (NextStep m)
-
-printAnyOutput :: (Cli m) => Maybe String -> m ()
-printAnyOutput (Just s) = putALine s
-printAnyOutput Nothing = return ()
-
-continue :: (Cli m) => NextStep m -> m (ConsoleStep m)
+continue :: (Cli m) => ConsoleStep m -> m (ConsoleStep m)
 continue (InputStep f) = do
   iM <- getALine
-  return $ maybe (ConsoleStep Nothing Termination) f iM
+  return $ maybe terminate f iM
 continue (Transition s) = return s
 continue (TransitionM s) = s
-continue Termination = return (ConsoleStep Nothing Termination)
-
-process :: (Cli m) => ConsoleStep m -> m (ConsoleStep m)
-process (ConsoleStep s nextStep) = do
-  printAnyOutput s
-  continue nextStep
+continue Termination = return terminate
+continue (OutputStep o s) = do
+  putALine o
+  return s
 
 inputStep :: (String -> ConsoleStep m) -> ConsoleStep m
-inputStep = ConsoleStep Nothing . InputStep
+inputStep = InputStep
 
 step :: ConsoleStep m -> ConsoleStep m
-step = ConsoleStep Nothing . Transition
+step = Transition
 
 mStep :: m (ConsoleStep m) -> ConsoleStep m
-mStep = ConsoleStep Nothing . TransitionM
+mStep = TransitionM
 
 terminate :: ConsoleStep m
-terminate = ConsoleStep Nothing Termination
-
-addOutput :: String -> Maybe String -> Maybe String
-addOutput s = Just . maybe s ((++) s)
+terminate = Termination
 
 withOutput :: String -> ConsoleStep m -> ConsoleStep m
-withOutput s (ConsoleStep o nextStep) = ConsoleStep (addOutput s o) nextStep
-
+withOutput s nextStep = (OutputStep s nextStep)
 
 class Monad m => Cli m where
   putALine :: String -> m ()
@@ -113,11 +100,11 @@ cliLoop p f i
       cliLoop p f a
 
 hasTerminated :: ConsoleStep m -> Bool
-hasTerminated (ConsoleStep _ Termination) = True
+hasTerminated Termination = True
 hasTerminated _ = False
 
 run :: (Cli m) => ConsoleStep m -> m ()
-run = cliLoop hasTerminated process
+run = cliLoop hasTerminated continue
 
 runInputIO :: (MonadException m) => ConsoleStep (InputT m) -> m ()
 runInputIO = runInputT defaultSettings . run
