@@ -4,73 +4,42 @@ module Store.State (
 , retrieveAll
 , update
 , delete
-, store'
-, retrieve'
-, retrieveAll'
-, update'
-, delete'
 ) where
 
 import Control.Monad.State (State)
 import qualified Control.Monad.State as ST
 import Store.Id (nextId)
 import Utils.List (maybeHead, updateAt)
--- import Control.Monad.Trans.Class (lift)
 
 type Records a = [(String, a)]
 
 
 -- TODO using lenses to lens into the shape of the state would be super useful
-store :: a -> State (Records a) (Either String ())
-store x = do
-  records <- ST.get
+
+store :: (x -> Records a) -> (Records a -> x -> x) -> a -> State x (Either String ())
+store getter setter x = do
+  st <- ST.get
+  let records = (getter st)
   case nextId records of
     (Left err) -> return (Left err)
-    (Right i) -> Right <$> ST.put ((i, x):records)
+    (Right i) -> Right <$> ST.put (setter ((i, x):records) st)
 
-store' :: a -> State (b, Records a) (Either String ())
-store' x = do
-  (b, records) <- ST.get
-  case nextId records of
-    (Left err) -> return (Left err)
-    (Right i) -> Right <$> ST.put (b, (i, x):records)
+retrieve :: (x -> Records a) -> (Records a -> x -> x) -> String -> State x (Either String (Maybe a))
+retrieve getter setter s = do
+  st <- ST.get
+  return . Right . maybeHead . map snd . filter ((== s) . fst) . getter $ st
 
-retrieve :: String -> State (Records a) (Either String (Maybe a))
-retrieve s = do
-  records <- ST.get
-  return . Right . maybeHead . map snd . filter ((== s) . fst) $ records
+retrieveAll :: (x -> Records a) -> (Records a -> x -> x) -> State x (Either String (Records a))
+retrieveAll getter setter = Right <$> getter <$> ST.get
 
-retrieve' :: String -> State (b, Records a) (Either String (Maybe a))
-retrieve' s = do
-  (b, records) <- ST.get
-  return . Right . maybeHead . map snd . filter ((== s) . fst) $ records
+update :: (x -> Records a) -> (Records a -> x -> x) -> String -> (a -> a) -> State x (Either String ())
+update getter setter s f = do
+  st <- ST.get
+  Right <$> ST.put (setter (updateAt ((== s) . fst) (fmap f) (getter st)) st)
 
-retrieveAll :: State (Records a) (Either String (Records a))
-retrieveAll = Right <$> ST.get
-
-retrieveAll' :: State (b, Records a) (Either String (Records a))
-retrieveAll' = Right <$> snd <$> ST.get
-
-update :: String -> (a -> a) -> State (Records a) (Either String ())
-update s f = do
-  records <- ST.get
-  Right <$> ST.put (updateAt ((== s) . fst) (fmap f) records)
-
-update' :: String -> (a -> a) -> State (b, Records a) (Either String ())
-update' s f = do
-  (b, records) <- ST.get
-  Right <$> ST.put (b, updateAt ((== s) . fst) (fmap f) records)
-
-delete :: String -> State (Records a) (Either String (Maybe a))
-delete s = do
-  records <- ST.get
-  let deleted = maybeHead $ map snd $ filter ((== s) . fst) records
-  ST.put (filter ((/= s) . fst) records)
-  return $ Right deleted
-
-delete' :: String -> State (b, Records a) (Either String (Maybe a))
-delete' s = do
-  (b, records) <- ST.get
-  let deleted = maybeHead $ map snd $ filter ((== s) . fst) records
-  ST.put (b, filter ((/= s) . fst) records)
+delete :: (x -> Records a) -> (Records a -> x -> x) -> String -> State x (Either String (Maybe a))
+delete getter setter s = do
+  st <- ST.get
+  let deleted = maybeHead $ map snd $ filter ((== s) . fst) (getter st)
+  ST.put (setter (filter ((/= s) . fst) (getter st)) st)
   return $ Right deleted
