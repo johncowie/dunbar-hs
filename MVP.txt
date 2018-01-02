@@ -1,0 +1,15 @@
+Friends App - Restarting
+
+- API: Haskell
+- SPA: Purescript
+
+
+MVP
+ - no security really, just runs locally (apart from environment variable for pointing at postgres)
+ - single login, dictated by environment variables (username and password)
+ - List view (links to friends names and birthdays)
+ - Friend view - name, textbox and field for birthday
+ - Can create new friend
+ - Can edit existing friend
+ - Can delete friend
+ 
