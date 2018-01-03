@@ -1,4 +1,6 @@
 [ ] pull out functions from cli for generating messages, so that they can be reused in tests
 [X] change console steps to have step specifically for output
 [ ] use lenses for state store instead of passing getter and setter
-[ ] refactor CLI tests to be a bit smarter and show the expected Inputs and Outputs
+[ ] use lenses for updating/creating friend
+[x] refactor CLI tests to be a bit smarter and show the expected Inputs and Outputs
+[ ] make it easier to create input steps in CLI

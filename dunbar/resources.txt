@@ -1,3 +1,1 @@
-("2",Friend {firstname = "Bob", lastname = "Geldof"})
-("1",Friend {firstname = "Jon Bon", lastname = "Jovi"})
-("0",Friend {firstname = "Jacob", lastname = "Rees Mogg"})
+
