@@ -43,14 +43,14 @@ main = hspec $ do
                   , stdout M.mainMenu ]
 
     it "pretty-prints any friends that have been stored" $ do
-      let friends = [("0", (newFriend "Darth" "Maul")), ("1", (newFriend "Kylo" "Ren"))]
+      let friends = [("0", (newFriend "Darth" "Maul" [])), ("1", (newFriend "Kylo" "Ren" []))]
       cliFlow friends [ stdout M.mainMenu
                       , stdin "v"
                       , stdout "0: Darth Maul\n1: Kylo Ren\n"
                       , stdout M.mainMenu ]
 
     it "can save a new friend" $ do
-      let friends = [("0", (newFriend "Darth" "Maul"))]
+      let friends = [("0", (newFriend "Darth" "Maul" []))]
       cliFlow friends [ stdout M.mainMenu
                       , stdin "n"
                       , stdout M.enterFirstname
@@ -58,9 +58,12 @@ main = hspec $ do
                       , stdout "You entered: Darth"
                       , stdout M.enterLastname
                       , stdin "Vadar"
+                      , stdout "You entered: Vadar"
+                      , stdout M.enterNote
+                      , stdin "He is a bad man"
                       , stdout M.mainMenu
                       , stdin "v"
-                      , stdout "0: Darth Maul\n1: Darth Vadar\n"
+                      , stdout "0: Darth Maul\n1: Darth Vadar - He is a bad man\n"
                       , stdout M.mainMenu
                       ]
 
@@ -78,11 +81,14 @@ main = hspec $ do
                  , stdout M.emptyLastname
                  , stdout M.enterLastname
                  , stdin "b"
+                 , stdout "You entered: b"
+                 , stdout M.enterNote
+                 , stdin "blah"
                  , stdout M.mainMenu
                  ]
 
     it "can delete a friend" $ do
-      let friends = [("0", (newFriend "Darth" "Maul")), ("1", (newFriend "Luke" "Skywalker"))]
+      let friends = [("0", (newFriend "Darth" "Maul" [])), ("1", (newFriend "Luke" "Skywalker" []))]
       cliFlow friends [ stdout M.mainMenu
                       , stdin "d"
                       , stdout "Enter ID of friend to delete:"
@@ -94,7 +100,7 @@ main = hspec $ do
                       , stdout M.mainMenu ]
 
     it "can show an individual friend" $ do
-      let friends = [("0", (newFriend "Princess" "Leia"))]
+      let friends = [("0", (newFriend "Princess" "Leia" []))]
       cliFlow friends [ stdout M.mainMenu
                       , stdin "s"
                       , stdout M.enterFriendId
@@ -103,7 +109,7 @@ main = hspec $ do
                       , stdout M.mainMenu]
 
     it "errors appropriately if trying to show non-existant friend" $ do
-      let friends = [("0", (newFriend "Princess" "Leia"))]
+      let friends = [("0", (newFriend "Princess" "Leia" []))]
       cliFlow friends [ stdout M.mainMenu
                       , stdin "s"
                       , stdout M.enterFriendId

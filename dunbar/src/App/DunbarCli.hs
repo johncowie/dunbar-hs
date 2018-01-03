@@ -85,7 +85,16 @@ readLastName :: (F.Store m Friend) => String -> C.ConsoleStep m
 readLastName firstName = C.inputStep $ \lastName -> do
   case lastName of
     "" -> C.withOutput M.emptyLastname (requestLastName firstName)
-    _ -> C.mStep (storeFriend (newFriend firstName lastName))
+    _ -> C.withOutput ("You entered: " ++ lastName) (requestNote firstName lastName)
+
+requestNote :: (F.Store m Friend) => String -> String -> C.ConsoleStep m
+requestNote firstName lastName = C.withOutput M.enterNote (readNote firstName lastName)
+
+readNote :: (F.Store m Friend) => String -> String -> C.ConsoleStep m
+readNote firstName lastName = C.inputStep $ \note -> do
+  C.mStep (storeFriend (newFriend firstName lastName (notes note)))
+  where notes "" = []
+        notes n = [n]
 
 storeFriend :: (F.Store m Friend) => Friend -> m (C.ConsoleStep m)
 storeFriend f = do

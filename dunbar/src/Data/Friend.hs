@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Data.Friend (
   Friend
@@ -15,10 +16,12 @@ data Friend = Friend { firstname :: String
                      deriving (Show, Read, Typeable)
 
 instance Default Friend where
-  def = newFriend def def
+  def = newFriend def def def
 
-newFriend :: String -> String -> Friend
-newFriend fn ln = Friend fn ln []
+newFriend :: String -> String -> [String] -> Friend
+newFriend = Friend
 
 showName :: Friend -> String
-showName friend = firstname friend ++ " " ++ lastname friend
+showName Friend{..} = firstname ++ " " ++ lastname ++ notesStr notes
+  where notesStr [] = ""
+        notesStr [x] = " - " ++ x

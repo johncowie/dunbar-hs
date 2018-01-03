@@ -18,6 +18,8 @@ enterFirstname = "Enter firstname: "
 
 enterLastname = "Enter lastname: "
 
+enterNote = "Enter a note (optional): "
+
 emptyFirstname = "Firstname cannot be empty - please try again"
 
 emptyLastname = "Lastname cannot be empty - please try again"
