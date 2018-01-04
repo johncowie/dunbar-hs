@@ -11,7 +11,7 @@ module Utils.Cli (
 , withOutput
 , terminate
 , ConsoleStep
-, Cli
+, Cli(..)
 , CliState
 )
 where

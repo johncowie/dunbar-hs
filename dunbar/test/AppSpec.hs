@@ -7,14 +7,15 @@ where
 
 import App.DunbarCli (start)
 import qualified App.Messages as M
-import Utils.Cli (runState, ConsoleStep, CliState)
+import Utils.Cli (CliState)
+import Utils.Console (Console, runState)
 import Utils.List (maybeHead)
 import Test.Hspec (hspec, it, describe, shouldBe, Expectation)
 import Data.Friend (Friend, newFriend)
 import Control.Monad.State (State)
 import SpecUtils ((==>))
 
-output :: [(String, Friend)] -> [String] -> ConsoleStep (CliState [(String, Friend)]) -> [String]
+output :: [(String, Friend)] -> [String] -> Console (CliState [(String, Friend)]) a -> [String]
 output initialState inputs startStep = outputs (runState initialState inputs start)
   where outputs ((is, os), x) = os
 
