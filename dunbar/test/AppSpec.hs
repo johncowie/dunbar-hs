@@ -62,6 +62,7 @@ main = hspec $ do
                       , stdout "You entered: Vadar"
                       , stdout M.enterNote
                       , stdin "He is a bad man"
+                      , stdout "You entered: He is a bad man"
                       , stdout M.mainMenu
                       , stdin "v"
                       , stdout "0: Darth Maul\n1: Darth Vadar - He is a bad man\n"
@@ -85,6 +86,7 @@ main = hspec $ do
                  , stdout "You entered: b"
                  , stdout M.enterNote
                  , stdin "blah"
+                 , stdout "You entered: blah"
                  , stdout M.mainMenu
                  ]
 
