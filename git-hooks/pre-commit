@@ -7,4 +7,5 @@
 #
 # To enable this hook, rename this file to "pre-commit".
 
+echo "Running stack tests"
 (cd dunbar && stack test)
