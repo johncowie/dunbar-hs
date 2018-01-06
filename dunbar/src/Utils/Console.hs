@@ -1,6 +1,6 @@
 module Utils.Console (
   Console
-, monad
+, lift
 , input
 , output
 , stop
@@ -56,12 +56,11 @@ instance (Cli m) => Applicative (Console m) where
 
 instance (Cli m) => Monad (Console m) where
   (>>=) (Return a) f = f a
-  (>>=) (Stop) f = stop
-  (>>=) c f = monad $ liftM2 (>>=) (continue c) (return f)
+  (>>=) (Stop) f     = stop
+  (>>=) c f          = monad $ liftM2 (>>=) (continue c) (return f)
 
--- TODO make traversable instance?
-
-
+lift :: (Cli m) => m a -> Console m a
+lift aM = monad $ return <$> aM
 
 -- FIXME move this stuff out
 type IOState = ([String], [String])

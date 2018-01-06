@@ -15,20 +15,43 @@ import Data.Friend (Friend, newFriend)
 import Control.Monad.State (State)
 import SpecUtils ((==>))
 
+type CliLine = (String, Bool)
+
 output :: [(String, Friend)] -> [String] -> Console (CliState [(String, Friend)]) a -> [String]
 output initialState inputs startStep = outputs (runState initialState inputs start)
   where outputs ((is, os), x) = os
 
-stdin :: String -> (String, Bool)
+stdin :: String -> CliLine
 stdin s = (s, True)
 
-stdout :: String -> (String, Bool)
+isStdIn :: CliLine -> Bool
+isStdIn = snd
+
+lineVal :: CliLine -> String
+lineVal = fst
+
+stdout :: String -> CliLine
 stdout s = (s, False)
 
-cliFlow :: [(String, Friend)] -> [(String, Bool)] -> Expectation
+cliFlow :: [(String, Friend)] -> [CliLine] -> Expectation
 cliFlow initState stdio = (reverse $ output initState stdins start) ==> stdouts
-  where stdins = map fst $ filter snd stdio
-        stdouts = map fst $ filter (not . snd) stdio
+  where stdins = map lineVal $ filter isStdIn stdio
+        stdouts = map lineVal $ filter (not . isStdIn) stdio
+
+createFriend :: String -> String -> String -> [CliLine]
+createFriend firstname lastname note =
+  [ stdout M.enterFirstname
+  , stdin firstname
+  , stdout ("You entered: " ++ firstname)
+
+  , stdout M.enterLastname
+  , stdin lastname
+  , stdout ("You entered: " ++ lastname)
+
+  , stdout M.enterNote
+  , stdin note
+  , stdout ("You entered: " ++ note)
+  ]
 
 main :: IO ()
 main = hspec $ do
@@ -40,7 +63,7 @@ main = hspec $ do
     it "prints <no-friends> when no friends have been stored" $ do
       cliFlow [] [  stdout M.mainMenu
                   , stdin "v"
-                  , stdout "<no-friends>"
+                  , stdout "<empty>"
                   , stdout M.mainMenu ]
 
     it "pretty-prints any friends that have been stored" $ do
@@ -52,22 +75,16 @@ main = hspec $ do
 
     it "can save a new friend" $ do
       let friends = [("0", (newFriend "Darth" "Maul" []))]
-      cliFlow friends [ stdout M.mainMenu
-                      , stdin "n"
-                      , stdout M.enterFirstname
-                      , stdin "Darth"
-                      , stdout "You entered: Darth"
-                      , stdout M.enterLastname
-                      , stdin "Vadar"
-                      , stdout "You entered: Vadar"
-                      , stdout M.enterNote
-                      , stdin "He is a bad man"
-                      , stdout "You entered: He is a bad man"
-                      , stdout M.mainMenu
-                      , stdin "v"
-                      , stdout "0: Darth Maul\n1: Darth Vadar - He is a bad man\n"
-                      , stdout M.mainMenu
-                      ]
+      cliFlow friends $ [ stdout M.mainMenu
+                        , stdin "n" ]
+                        ++
+                        createFriend "Darth" "Vadar" "He is a bad man"
+                        ++
+                        [ stdout M.mainMenu
+                        , stdin "v"
+                        , stdout "0: Darth Maul\n1: Darth Vadar - He is a bad man\n"
+                        , stdout M.mainMenu
+                        ]
 
     it "should re-ask user for input if first name or lastname is empty" $ do
       cliFlow [] [ stdout M.mainMenu
@@ -119,3 +136,10 @@ main = hspec $ do
                       , stdin "1"
                       , stdout (M.friendDoesNotExist "1")
                       , stdout M.mainMenu]
+
+    it "doesn't process any more inputs if app has been quit" $ do
+      cliFlow [] [ stdout M.mainMenu
+                 , stdin "q"
+                 , stdin "n"
+                 , stdin "hello"
+                 , stdin "anyone there!!"]
