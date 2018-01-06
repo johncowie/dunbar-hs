@@ -54,7 +54,7 @@ viewFriend =
 
 deleteFriend :: DunbarCli m ()
 deleteFriend =
-  output "Enter ID of friend to delete:" $
+  output M.enterDeleteFriendId $
   input $ \s -> do
   deleted <- lift $ F.delete s
   case deleted of
@@ -70,7 +70,7 @@ mainMenu = output M.mainMenu $
                 "v" -> viewFriends >> mainMenu
                 "s" -> viewFriend >> mainMenu
                 "d" -> deleteFriend >> mainMenu
-                "q" -> stop
+                "q" -> abort M.goodbye
                 _ -> output "Invalid Option: please try again" mainMenu
 
 enterValue :: (Cli m, F.Store m Friend) => String -> (String -> Either String a) -> Console m a

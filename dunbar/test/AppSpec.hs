@@ -140,6 +140,7 @@ main = hspec $ do
     it "doesn't process any more inputs if app has been quit" $ do
       cliFlow [] [ stdout M.mainMenu
                  , stdin "q"
+                 , stdout M.goodbye
                  , stdin "n"
                  , stdin "hello"
                  , stdin "anyone there!!"]
