@@ -5,21 +5,20 @@ module AppSpec (
 )
 where
 
-import App.DunbarCli (start)
+import App.DunbarCli (app)
 import qualified App.Messages as M
-import Utils.Cli (CliState)
-import Utils.Console (Console, runState)
 import Utils.List (maybeHead)
 import Test.Hspec (hspec, it, describe, shouldBe, Expectation)
 import Data.Friend (Friend, newFriend)
-import Control.Monad.State (State)
+import qualified Control.Monad.State as ST
 import SpecUtils ((==>))
 
 type CliLine = (String, Bool)
 
-output :: [(String, Friend)] -> [String] -> Console (CliState [(String, Friend)]) a -> [String]
-output initialState inputs startStep = outputs (runState initialState inputs start)
+output :: [(String, Friend)] -> [String] -> [String]
+output initialState inputs = outputs (runState initialState inputs app)
   where outputs ((is, os), x) = os
+        runState startState inputs app = snd $ ST.runState app ((inputs, []), startState)
 
 stdin :: String -> CliLine
 stdin s = (s, True)
@@ -33,8 +32,9 @@ lineVal = fst
 stdout :: String -> CliLine
 stdout s = (s, False)
 
+-- FIXME always have the initial state as empty - should be completely black box
 cliFlow :: [(String, Friend)] -> [CliLine] -> Expectation
-cliFlow initState stdio = (reverse $ output initState stdins start) ==> stdouts
+cliFlow initState stdio = (reverse $ output initState stdins) ==> stdouts
   where stdins = map lineVal $ filter isStdIn stdio
         stdouts = map lineVal $ filter (not . isStdIn) stdio
 

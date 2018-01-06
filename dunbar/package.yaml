@@ -30,6 +30,7 @@ dependencies:
 - hspec
 - data-default
 - directory
+- consolation
 
 library:
   source-dirs: src

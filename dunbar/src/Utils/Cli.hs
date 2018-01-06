@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 module Utils.Cli (
-  Cli(..)
-, CliState
+  CliState
 )
 where
 
+import Consolation.Cli (Cli(..))
 import System.Console.Haskeline (InputT, runInputT, getInputLine, outputStrLn, MonadException)
 import Data.Maybe (fromMaybe)
 import qualified Control.Monad.State as ST
@@ -13,14 +13,6 @@ import Control.Monad.State (State, StateT, runStateT)
 import Utils.List (maybeHead, maybeTail)
 import Store.File (SingleFileIO)
 import Control.Monad.Trans (lift)
-
-class Monad m => Cli m where
-  putALine :: String -> m ()
-  getALine :: m (Maybe String)
-
-instance Cli IO where
-  putALine = putStrLn
-  getALine = Just <$> getLine
 
 instance (MonadException m) => Cli (InputT m) where
   putALine = outputStrLn

@@ -4,11 +4,13 @@
 {-# LANGUAGE RankNTypes #-}
 
 module App.DunbarCli (
-  start
+  app
 ) where
 
-import           Utils.Console (Console, output, input, lift, stop, runInputIO)
-import           Utils.Cli (Cli)
+import           Consolation.Console (Console, output, input, lift, stop, run)
+import           System.Console.Haskeline (runInputT, defaultSettings)
+import           Consolation.Cli (Cli)
+import           Utils.Cli -- importing instances
 import qualified Store as F
 import           Store.File (runForFile)
 import           Data.Text (strip, toLower, pack)
@@ -83,7 +85,7 @@ notEmptyString :: String -> String -> Either String String
 notEmptyString err "" = Left err
 notEmptyString _ input = Right input
 
-newFriend :: (Cli m, F.Store m Friend) => Console m ()
+newFriend :: DunbarCli m ()
 newFriend = do
   firstName <- enterValue M.enterFirstname (notEmptyString M.emptyFirstname)
   lastName  <- enterValue M.enterLastname (notEmptyString M.emptyLastname)
@@ -93,11 +95,11 @@ newFriend = do
   where notes "" = []
         notes n = [n]
 
-start :: DunbarCli m ()
-start = mainMenu
+app :: (Cli m, F.Store m Friend) => m ()
+app = run mainMenu
 
 main' :: String -> IO ()
-main' s = runForFile s (runInputIO mainMenu)
+main' s = runForFile s $ runInputT defaultSettings $ app
 
 main :: IO ()
 main = main' "resources.txt"

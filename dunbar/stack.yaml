@@ -41,6 +41,10 @@ packages:
 # (e.g., acme-missiles-0.3)
 # extra-deps: []
 
+extra-deps:
+- git: git@github.com:johncowie/consolation.git
+  commit: 85221507ca88d3e84c49612541f74334975bcbd6
+
 # Override default flag values for local packages and extra-deps
 # flags: {}
 
