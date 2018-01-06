@@ -7,7 +7,6 @@ module App.DunbarCli (
   start
 ) where
 
--- import           Utils.Cli (runInputIO)
 import           Utils.Console (Console, output, input, monad, stop, runInputIO)
 import           Utils.Cli (Cli)
 import qualified Store as F
@@ -20,60 +19,56 @@ import qualified App.Messages as M
 
 type DunbarCli m a = (Cli m, F.Store m Friend) => Console m a
 
-requestOption :: DunbarCli m ()
-requestOption = monad $ do
-  friends :: Either String [(String, Friend)] <- F.retrieveAll
-  case friends of
-    (Left err) -> return $ output err stop
-    (Right _) -> return $ output M.mainMenu readOption
+abort :: String -> Console m a
+abort err = output err stop
 
-viewFriends :: DunbarCli m ()
-viewFriends = monad $ do
-  friends <- F.retrieveAll
-  case friends of
-    (Left err) -> return $ output err stop
-    (Right friends) -> return $ output (showFriends friends) requestOption
+returnOrReroute :: DunbarCli m a -> m (Either String a) -> DunbarCli m a
+returnOrReroute reroute mValue = monad $ either (flip output reroute) return <$> mValue
+
+returnOrStop :: m (Either String a) -> DunbarCli m a
+returnOrStop = returnOrReroute stop
+
+viewFriends :: DunbarCli m [(String, Friend)]
+viewFriends = do
+  friends <- returnOrStop F.retrieveAll
+  output (showFriends friends) (return friends)
   where showTuple (i, r) = i ++ ": " ++ Friend.showName r
         showFriends [] = "<no-friends>"
         showFriends rs = unlines $ map showTuple $ sortOn fst rs
 
-requestIdToDelete :: DunbarCli m ()
-requestIdToDelete = output "Enter ID of friend to delete:" readIdToDelete
-
-requestIdToShow :: DunbarCli m ()
-requestIdToShow = output M.enterFriendId readIdToShow
-
-readIdToDelete :: DunbarCli m ()
-readIdToDelete = input $ \s -> deleteFriend s
-
-readIdToShow :: DunbarCli m ()
-readIdToShow = input $ \s -> showFriend s
-
-showFriend :: (Cli m, F.Store m Friend) => String -> (DunbarCli m ())
-showFriend i = monad $ do
-  friend <- F.retrieve i
+showFriend :: DunbarCli m ()
+showFriend =
+  output M.enterFriendId $
+  input $ \s -> do
+  monad $ do
+  friend <- F.retrieve s
   case friend of
     (Left err) -> return $ output err stop
-    (Right (Just friend)) -> return $ output (Friend.showName friend) requestOption
-    (Right Nothing) -> return $ output (M.friendDoesNotExist i) requestOption
+    (Right (Just friend)) -> return $ output (Friend.showName friend) (return ())
+    (Right Nothing) -> return $ output (M.friendDoesNotExist s) (return ())
 
 
-deleteFriend :: (Cli m, F.Store m Friend) => String -> DunbarCli m ()
-deleteFriend s = monad $ do
+deleteFriend :: DunbarCli m ()
+deleteFriend =
+  output "Enter ID of friend to delete:" $
+  input $ \s -> do
+  monad $ do
   deleted <- F.delete s
   case deleted of
-    (Right (Just friend)) -> return $ output ("Deleted: " ++ Friend.showName friend) requestOption
-    (Right Nothing) -> return $ output ("Couldn't find friend with ID: " ++ s) requestOption
-    (Left err) -> return $ output err requestOption
+    (Right (Just friend)) -> return $ output ("Deleted: " ++ Friend.showName friend) (return ())
+    (Right Nothing) -> return $ output ("Couldn't find friend with ID: " ++ s) (return ())
+    (Left err) -> return $ output err (return ())
 
-readOption :: DunbarCli m ()
-readOption = input $ \s -> case (toLower . strip . pack $ s) of
-  "n" -> newFriend
-  "v" -> viewFriends
-  "s" -> requestIdToShow
-  "d" -> requestIdToDelete
-  "q" -> stop
-  _ -> output "Invalid Option: please try again" requestOption
+mainMenu :: DunbarCli m ()
+mainMenu = output M.mainMenu $
+           input $ \s -> do
+              case (toLower . strip . pack $ s) of
+                "n" -> newFriend >> mainMenu
+                "v" -> viewFriends >> mainMenu
+                "s" -> showFriend >> mainMenu
+                "d" -> deleteFriend >> mainMenu
+                "q" -> stop
+                _ -> output "Invalid Option: please try again" mainMenu
 
 enterValue :: (Cli m, F.Store m Friend) => String -> (String -> Either String a) -> Console m a
 enterValue prompt reader = output prompt $
@@ -91,18 +86,15 @@ newFriend = do
   lastName  <- enterValue M.enterLastname (notEmptyString M.emptyLastname)
   note      <- enterValue M.enterNote return
   let friend = Friend.newFriend firstName lastName (notes note)
-  result <- monad $ return <$> F.store friend
-  case result of
-    (Left err) -> output err requestOption
-    (Right _) -> requestOption
+  returnOrReroute (return ()) $ F.store friend
   where notes "" = []
         notes n = [n]
 
 start :: DunbarCli m ()
-start = requestOption
+start = mainMenu
 
 main' :: String -> IO ()
-main' s = runForFile s (runInputIO requestOption)
+main' s = runForFile s (runInputIO mainMenu)
 
 main :: IO ()
 main = main' "resources.txt"
