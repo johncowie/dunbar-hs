@@ -37,8 +37,8 @@ instance (Typeable a, Default a, Read a, Show a) => Store F.SingleFileIO a where
   delete = F.delete
 
 instance (Monad m) => Store (StateT [(String, a)] m) a where
-  store = S.storeT
-  retrieve = S.retrieveT
-  retrieveAll = S.retrieveAllT
-  update = S.updateT
-  delete = S.deleteT
+  store = S.store
+  retrieve = S.retrieve
+  retrieveAll = S.retrieveAll
+  update = S.update
+  delete = S.delete
