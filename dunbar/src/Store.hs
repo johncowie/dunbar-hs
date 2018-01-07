@@ -36,23 +36,9 @@ instance (Typeable a, Default a, Read a, Show a) => Store F.SingleFileIO a where
   update = F.update
   delete = F.delete
 
-instance Store (State [(String, a)]) a where
-  store = S.store id const
-  retrieve = S.retrieve id const
-  retrieveAll = S.retrieveAll id const
-  update = S.update id const
-  delete = S.delete id const
-
-instance Store (State (b, [(String, a)])) a where
-  store = S.store snd (<$)
-  retrieve = S.retrieve snd (<$)
-  retrieveAll = S.retrieveAll snd (<$)
-  update = S.update snd (<$)
-  delete = S.delete snd (<$)
-
--- instance Store (State (f [(String, a)])) a where
---   store = undefined
---   retrieve = undefined
---   retrieveAll = undefined
---   update = undefined
---   delete = undefined
+instance (Monad m) => Store (StateT [(String, a)] m) a where
+  store = S.storeT
+  retrieve = S.retrieveT
+  retrieveAll = S.retrieveAllT
+  update = S.updateT
+  delete = S.deleteT
