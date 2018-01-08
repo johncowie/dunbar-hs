@@ -43,7 +43,7 @@ packages:
 
 extra-deps:
 - git: git@github.com:johncowie/consolation.git
-  commit: 6a0ba065efd7d4728dabe8ac06fc89da0ef7648c
+  commit: 50a2a621ccbe429d70446c68785cd95e1895eb34
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

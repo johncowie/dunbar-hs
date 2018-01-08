@@ -12,13 +12,13 @@ import Test.Hspec (hspec, it, describe, shouldBe, Expectation)
 import Data.Friend (Friend, newFriend)
 import qualified Control.Monad.State as ST
 import SpecUtils ((==>))
-import Consolation.Spec (stdin, stdout, ExpectedIO, runExpectedIO)
+import Consolation.Spec (stdin, stdout, ExpectedIO, runExpectedIO, expectedOutput)
 
 -- FIXME always have the initial state as empty - should be completely black box
 
 cliFlow :: [(String, Friend)] -> ExpectedIO -> Expectation
-cliFlow initState stdio = actualOutput ==> expectedOutput
-  where (actualOutput, expectedOutput) = runExpectedIO app initState stdio
+cliFlow initState stdio = actualOutput ==> expectedOutput stdio
+  where (actualOutput, finalState) = ST.runState (runExpectedIO app stdio) initState
 
 createFriend :: String -> String -> String -> ExpectedIO
 createFriend firstname lastname note =

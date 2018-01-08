@@ -27,7 +27,6 @@ dependencies:
 - uuid
 - mtl
 - transformers
-- hspec
 - data-default
 - directory
 - consolation
@@ -56,3 +55,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - dunbar
+    - hspec
