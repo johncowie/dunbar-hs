@@ -8,15 +8,11 @@ module Data.Friend (
 ) where
 
 import Data.Typeable (Typeable)
-import Data.Default (Default(def))
 
 data Friend = Friend { firstname :: String
                      , lastname :: String
                      , notes :: [String] }
                      deriving (Show, Read, Typeable)
-
-instance Default Friend where
-  def = newFriend def def def
 
 newFriend :: String -> String -> [String] -> Friend
 newFriend = Friend

@@ -12,7 +12,6 @@ import System.Console.Haskeline (InputT)
 import Control.Monad.State (State, StateT)
 import Control.Monad.Trans (lift, MonadTrans)
 import Data.Typeable (Typeable)
-import Data.Default (Default)
 import Data.Functor ((<$))
 
 class Monad m => Store m a where
@@ -29,7 +28,7 @@ instance (Store m a, MonadTrans t, Monad (t m)) => Store (t m) a where
   update s = lift . update s
   delete = lift . delete
 
-instance {-# OVERLAPPING #-} (Typeable a, Default a, Read a, Show a) => Store F.SingleFileIO a where
+instance {-# OVERLAPPING #-} (Typeable a, Read a, Show a) => Store F.SingleFileIO a where
   store = F.store
   retrieve = F.retrieve
   retrieveAll = F.retrieveAll

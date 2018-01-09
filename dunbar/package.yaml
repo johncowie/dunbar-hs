@@ -27,7 +27,6 @@ dependencies:
 - uuid
 - mtl
 - transformers
-- data-default
 - directory
 - consolation
 

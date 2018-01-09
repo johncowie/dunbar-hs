@@ -11,12 +11,8 @@ import Store.File (SingleFileIO, runForFile)
 import Test.Hspec (SpecWith, hspec, describe, it, shouldBe, Expectation, pending, pendingWith, shouldReturn, before_, after_, around)
 import Control.Monad.State (runState, State)
 import Data.Typeable (Typeable)
-import Data.Default (Default(def))
 
 data Fruit = Apple | Banana | Orange | Pear deriving (Eq, Read, Show, Typeable)
-
-instance Default Fruit where
-  def = Apple
 
 
 testSuite :: (Store m Fruit) => (forall a. m a -> IO a) -> String -> SpecWith ()
