@@ -19,6 +19,7 @@ import qualified Data.Friend as Friend
 import           Data.List (sortOn)
 import qualified App.Messages as M
 import           Control.Monad.Trans (lift)
+import           Control.Monad.Fix (fix)
 
 type DunbarCli m a = (Cli m, F.Store m Friend) => Console m a
 
@@ -28,11 +29,25 @@ abort err = output err >> exit
 returnOrStop :: DunbarCli m (Either String a) -> DunbarCli m a
 returnOrStop e = either abort return =<< e
 
+pageList :: [a] -> ([a] -> String) -> DunbarCli m [a]
+pageList l f = do
+  output $ f $ take 10 l
+  let remainder = drop 10 l
+  case remainder of
+    [] -> return l
+    _  -> do
+          -- output "Type <enter> for more, m to escape"
+          s <- input
+          fix $ \loop -> case s of
+            "" -> pageList remainder f
+            "m" -> return l
+            _ -> output "unrecognised option" >> loop
+
 viewFriends :: DunbarCli m [(String, Friend)]
 viewFriends = do
   friends <- returnOrStop (lift F.retrieveAll)
-  output (showRecords Friend.showName friends)
-  return friends
+  let sortedFriends = sortOn (Friend.showName . snd) friends
+  pageList friends (showRecords Friend.showName)
 
 showRecords :: (a -> String) -> [(String, a)] -> String
 showRecords _ [] = "<empty>"

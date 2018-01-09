@@ -9,7 +9,7 @@ import App.DunbarCli (app)
 import qualified App.Messages as M
 import Utils.List (maybeHead)
 import Test.Hspec (hspec, it, describe, shouldBe, Expectation)
-import Data.Friend (Friend, newFriend)
+import Data.Friend (Friend, newFriend, showName)
 import qualified Control.Monad.State as ST
 import SpecUtils ((==>))
 import Consolation.Spec (stdin, stdout, ExpectedIO, runExpectedIO, expectedOutput)
@@ -127,3 +127,16 @@ main = hspec $ do
                  , stdin "n"
                  , stdin "hello"
                  , stdin "anyone there!!"]
+
+    it "should support paging through friends, 10 per page" $ do
+      let friendForLetter i = newFriend ("f" ++ (i:[])) ("l" ++ (i:[])) []
+          generatedFriends = zip (map (:[]) ['a'..]) $ map friendForLetter ['a'..'z']
+          listView = unlines . map (\i -> (i:[]) ++ ": " ++ showName (friendForLetter i))
+      cliFlow generatedFriends $ stdout M.mainMenu
+                              ++ stdin "v"
+                              ++ stdout (listView ['a'..'j'])
+                              ++ stdin ""
+                              ++ stdout (listView ['k'..'t'])
+                              ++ stdin ""
+                              ++ stdout (listView ['u'..'z'])
+                              ++ stdout M.mainMenu

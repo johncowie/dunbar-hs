@@ -2,6 +2,7 @@ module Utils.List (
   updateAt
 , maybeHead
 , maybeTail
+, page
 ) where
 
 updateAt :: (a -> Bool) -> (a -> a) -> [a] -> [a]
@@ -15,3 +16,6 @@ maybeHead xs = Just $ head xs
 maybeTail :: [a] -> [a]
 maybeTail [] = []
 maybeTail xs = tail xs
+
+page :: Int -> Int -> [a] -> [a]
+page offset pageSize = take pageSize . drop offset
