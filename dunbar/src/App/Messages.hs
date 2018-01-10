@@ -24,3 +24,5 @@ enterNote = "Enter a note (optional): "
 emptyFirstname = "Firstname cannot be empty - please try again"
 emptyLastname = "Lastname cannot be empty - please try again"
 goodbye = "Byyeeeee!!!"
+
+continuePaging = "Type <enter> for more, m to escape"

@@ -29,16 +29,16 @@ abort err = output err >> exit
 returnOrStop :: DunbarCli m (Either String a) -> DunbarCli m a
 returnOrStop e = either abort return =<< e
 
-pageList :: [a] -> ([a] -> String) -> DunbarCli m [a]
+pageList :: (Cli m) => [a] -> ([a] -> String) -> Console m [a]
 pageList l f = do
   output $ f $ take 10 l
   let remainder = drop 10 l
   case remainder of
     [] -> return l
-    _  -> do
-          -- output "Type <enter> for more, m to escape"
+    _  -> fix $ \loop -> do
+          output M.continuePaging
           s <- input
-          fix $ \loop -> case s of
+          case s of
             "" -> pageList remainder f
             "m" -> return l
             _ -> output "unrecognised option" >> loop
@@ -47,11 +47,11 @@ viewFriends :: DunbarCli m [(String, Friend)]
 viewFriends = do
   friends <- returnOrStop (lift F.retrieveAll)
   let sortedFriends = sortOn (Friend.showName . snd) friends
-  pageList friends (showRecords Friend.showName)
+  pageList sortedFriends (showRecords Friend.showName)
 
 showRecords :: (a -> String) -> [(String, a)] -> String
 showRecords _ [] = "<empty>"
-showRecords f xs = unlines $ map showTuple $ sortOn fst xs
+showRecords f xs = unlines $ map showTuple xs
   where showTuple (i, r) = i ++ ": " ++ f r
 
 viewFriend :: DunbarCli m ()

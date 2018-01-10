@@ -130,13 +130,15 @@ main = hspec $ do
 
     it "should support paging through friends, 10 per page" $ do
       let friendForLetter i = newFriend ("f" ++ (i:[])) ("l" ++ (i:[])) []
-          generatedFriends = zip (map (:[]) ['a'..]) $ map friendForLetter ['a'..'z']
+          generatedFriends = reverse $ zip (map (:[]) ['a'..]) $ map friendForLetter ['a'..'z']
           listView = unlines . map (\i -> (i:[]) ++ ": " ++ showName (friendForLetter i))
       cliFlow generatedFriends $ stdout M.mainMenu
                               ++ stdin "v"
                               ++ stdout (listView ['a'..'j'])
+                              ++ stdout M.continuePaging
                               ++ stdin ""
                               ++ stdout (listView ['k'..'t'])
+                              ++ stdout M.continuePaging
                               ++ stdin ""
                               ++ stdout (listView ['u'..'z'])
                               ++ stdout M.mainMenu
