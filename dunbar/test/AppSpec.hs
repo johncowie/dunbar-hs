@@ -107,6 +107,8 @@ main = hspec $ do
                       , stdout M.enterFriendId
                       , stdin "0"
                       , stdout "Princess Leia"
+                      , stdout M.friendMenu
+                      , stdin "q"
                       , stdout M.mainMenu]
 
     it "errors appropriately if trying to show non-existant friend" $ do
@@ -142,3 +144,22 @@ main = hspec $ do
                               ++ stdin ""
                               ++ stdout (listView ['u'..'z'])
                               ++ stdout M.mainMenu
+
+    it "can add note to friend" $ do
+       cliFlow [] $ stdout M.mainMenu
+                 ++ stdin "n"
+                 ++ createFriend "Billy" "Ray" "Note 1"
+                 ++ stdout M.mainMenu
+                 ++ stdin "s"
+                 ++ stdout M.enterFriendId
+                 ++ stdin "0"
+                 ++ stdout "Billy Ray - Note 1"
+                 ++ stdout M.friendMenu
+                 ++ stdin "n"
+                 ++ stdout M.addNote
+                 ++ stdin "Note 2"
+                 ++ stdout "You entered: Note 2"
+                 ++ stdout "Billy Ray - Note 1"
+                 ++ stdout M.friendMenu
+                 ++ stdin "q"
+                 ++ stdout M.mainMenu

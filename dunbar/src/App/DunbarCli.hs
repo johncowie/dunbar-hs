@@ -54,6 +54,28 @@ showRecords _ [] = "<empty>"
 showRecords f xs = unlines $ map showTuple xs
   where showTuple (i, r) = i ++ ": " ++ f r
 
+addNote :: String -> DunbarCli m ()
+addNote friendId = do
+  s <- enterValue M.addNote (notEmptyString M.emptyNote)
+  res <- lift $ F.update friendId (Friend.addNote s)
+  case res of
+    (Left err) -> output err
+    (Right _) -> do
+      friend <- lift $ F.retrieve friendId
+      case friend of
+        (Left err) -> output err
+        (Right (Just f)) -> output (Friend.showName f)
+        (Right Nothing) -> output (M.friendDoesNotExist friendId)
+
+friendMenu :: String -> DunbarCli m ()
+friendMenu friendId = do
+  output M.friendMenu
+  s <- input
+  case (toLower . strip . pack $ s) of
+    "n" -> addNote friendId >> friendMenu friendId
+    "q" -> continue
+    _ -> output M.invalidOption
+
 viewFriend :: DunbarCli m ()
 viewFriend = do
   output M.enterFriendId
@@ -61,7 +83,7 @@ viewFriend = do
   friend <- lift $ F.retrieve s
   case friend of
     (Left err) -> abort err
-    (Right (Just friend)) -> output (Friend.showName friend)
+    (Right (Just friend)) -> output (Friend.showName friend) >> friendMenu s
     (Right Nothing) -> output (M.friendDoesNotExist s)
 
 

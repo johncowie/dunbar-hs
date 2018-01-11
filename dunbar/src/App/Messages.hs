@@ -4,16 +4,17 @@ module App.Messages (
 
 import Data.List (intercalate)
 
+buildMenu :: String -> [String] -> String
+buildMenu intro options = intro ++ (intercalate ("\n" ++ padding) options)
+  where padding = take (length intro) $ repeat ' '
+
 mainMenu :: String
-mainMenu = intro ++ (intercalate ("\n" ++ padding) options)
-  where options = [ "(n)ew friends"
-                  , "(v)iew friends"
-                  , "(s)how friend"
-                  , "(d)elete friend"
-                  , "(q)uit"
-                  ]
-        intro = "Choose option: "
-        padding = take (length intro) $ repeat ' '
+mainMenu = buildMenu "Choose option: "
+                    [ "(n)ew friends"
+                    , "(v)iew friends"
+                    , "(s)how friend"
+                    , "(d)elete friend"
+                    , "(q)uit"]
 
 enterFriendId = "Enter ID of friend to view: "
 enterDeleteFriendId = "Enter ID of friend to delete:"
@@ -26,3 +27,13 @@ emptyLastname = "Lastname cannot be empty - please try again"
 goodbye = "Byyeeeee!!!"
 
 continuePaging = "Type <enter> for more, m to escape"
+
+friendMenu = buildMenu "Choose option: "
+                       [ "(n) - add note"
+                       , "(q) - return to main menu"]
+
+addNote = "Enter note: "
+
+emptyNote = "Note cannot be empty - please try again"
+
+invalidOption = "Invalid option - please try again"

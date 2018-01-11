@@ -5,6 +5,7 @@ module Data.Friend (
   Friend
 , newFriend
 , showName
+, addNote
 ) where
 
 import Data.Typeable (Typeable)
@@ -17,7 +18,10 @@ data Friend = Friend { firstname :: String
 newFriend :: String -> String -> [String] -> Friend
 newFriend = Friend
 
+addNote :: String -> Friend -> Friend
+addNote s f = f{notes=notes f ++ [s]}
+
 showName :: Friend -> String
 showName Friend{..} = firstname ++ " " ++ lastname ++ notesStr notes
   where notesStr [] = ""
-        notesStr [x] = " - " ++ x
+        notesStr (x:xs) = " - " ++ x
