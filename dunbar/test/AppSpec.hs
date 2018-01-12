@@ -10,6 +10,7 @@ import qualified App.Messages as M
 import Utils.List (maybeHead)
 import Test.Hspec (hspec, it, describe, shouldBe, Expectation)
 import Data.Friend (Friend, newFriend, showName)
+import qualified Data.Friend as Friend
 import qualified Control.Monad.State as ST
 import SpecUtils ((==>))
 import Consolation.Spec (stdin, stdout, ExpectedIO, runExpectedIO, expectedOutput)
@@ -100,16 +101,17 @@ main = hspec $ do
                       , stdout M.mainMenu ]
 
     it "can show an individual friend" $ do
-      let friends = [("0", (newFriend "Princess" "Leia" []))]
+      let leia = (newFriend "Princess" "Leia" [])
+          friends = [("0", leia)]
       cliFlow friends $ concat $
                       [ stdout M.mainMenu
                       , stdin "s"
                       , stdout M.enterFriendId
                       , stdin "0"
-                      , stdout "Princess Leia"
+                      , stdout (Friend.prettyPrint "0" leia)
                       , stdout M.friendMenu
                       , stdin "q"
-                      , stdout M.mainMenu]
+                      , stdout M.mainMenu ]
 
     it "errors appropriately if trying to show non-existant friend" $ do
       let friends = [("0", (newFriend "Princess" "Leia" []))]
@@ -153,13 +155,13 @@ main = hspec $ do
                  ++ stdin "s"
                  ++ stdout M.enterFriendId
                  ++ stdin "0"
-                 ++ stdout "Billy Ray - Note 1"
+                 ++ stdout (Friend.prettyPrint "0" (newFriend "Billy" "Ray" ["Note 1"]))
                  ++ stdout M.friendMenu
                  ++ stdin "n"
                  ++ stdout M.addNote
                  ++ stdin "Note 2"
                  ++ stdout "You entered: Note 2"
-                 ++ stdout "Billy Ray - Note 1"
+                 ++ stdout (Friend.prettyPrint "0" (newFriend "Billy" "Ray" ["Note 1", "Note 2"]))
                  ++ stdout M.friendMenu
                  ++ stdin "q"
                  ++ stdout M.mainMenu

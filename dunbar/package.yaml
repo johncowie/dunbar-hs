@@ -29,6 +29,7 @@ dependencies:
 - transformers
 - directory
 - consolation
+- yaml
 
 library:
   source-dirs: src

@@ -64,7 +64,7 @@ addNote friendId = do
       friend <- lift $ F.retrieve friendId
       case friend of
         (Left err) -> output err
-        (Right (Just f)) -> output (Friend.showName f)
+        (Right (Just f)) -> output (Friend.prettyPrint friendId f)
         (Right Nothing) -> output (M.friendDoesNotExist friendId)
 
 friendMenu :: String -> DunbarCli m ()
@@ -83,7 +83,7 @@ viewFriend = do
   friend <- lift $ F.retrieve s
   case friend of
     (Left err) -> abort err
-    (Right (Just friend)) -> output (Friend.showName friend) >> friendMenu s
+    (Right (Just friend)) -> output (Friend.prettyPrint s friend) >> friendMenu s
     (Right Nothing) -> output (M.friendDoesNotExist s)
 
 
