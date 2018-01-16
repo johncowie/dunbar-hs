@@ -88,13 +88,20 @@ main = hspec $ do
                  ++ stdout M.mainMenu
 
     it "can delete a friend" $ do
-      let friends = [("0", (newFriend "Darth" "Maul" [])), ("1", (newFriend "Luke" "Skywalker" []))]
+      let darth = newFriend "Darth" "Maul" []
+          luke = newFriend "Luke" "Skywalker" []
+          friends = [("0", darth), ("1", luke)]
       cliFlow friends $ concat $
                       [ stdout M.mainMenu
-                      , stdin "d"
-                      , stdout "Enter ID of friend to delete:"
+                      , stdin "s"
+                      , stdout M.enterFriendId
                       , stdin "0"
-                      , stdout "Deleted: Darth Maul"
+                      , stdout (Friend.prettyPrint "0" darth)
+                      , stdout M.friendMenu
+                      , stdin "d"
+                      , stdout "Deleted Darth Maul"
+                      , stdout M.friendMenu
+                      , stdin "q"
                       , stdout M.mainMenu
                       , stdin "v"
                       , stdout "1: Luke Skywalker\n"

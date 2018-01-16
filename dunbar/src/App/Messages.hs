@@ -13,7 +13,6 @@ mainMenu = buildMenu "Choose option: "
                     [ "(n)ew friends"
                     , "(v)iew friends"
                     , "(s)how friend"
-                    , "(d)elete friend"
                     , "(q)uit"]
 
 enterFriendId = "Enter ID of friend to view: "
@@ -30,6 +29,7 @@ continuePaging = "Type <enter> for more, m to escape"
 
 friendMenu = buildMenu "Choose option: "
                        [ "(n) - add note"
+                       , "(d) - delete friend"
                        , "(q) - return to main menu"]
 
 addNote = "Enter note: "

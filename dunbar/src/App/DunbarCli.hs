@@ -73,6 +73,7 @@ friendMenu friendId = do
   s <- input
   case (toLower . strip . pack $ s) of
     "n" -> addNote friendId >> friendMenu friendId
+    "d" -> deleteFriend friendId >> friendMenu friendId
     "q" -> continue
     _ -> output M.invalidOption
 
@@ -87,14 +88,12 @@ viewFriend = do
     (Right Nothing) -> output (M.friendDoesNotExist s)
 
 
-deleteFriend :: DunbarCli m ()
-deleteFriend = do
-  output M.enterDeleteFriendId
-  s <- input
-  deleted <- lift $ F.delete s
+deleteFriend :: String -> DunbarCli m ()
+deleteFriend friendId = do
+  deleted <- lift $ F.delete friendId
   case deleted of
-    (Right (Just friend)) -> output ("Deleted: " ++ Friend.showName friend)
-    (Right Nothing) -> output ("Couldn't find friend with ID: " ++ s)
+    (Right (Just friend)) -> output ("Deleted " ++ Friend.showName friend)
+    (Right Nothing) -> output ("Couldn't find friend with ID: " ++ friendId)
     (Left err) -> output err
 
 mainMenu :: DunbarCli m ()
@@ -105,7 +104,6 @@ mainMenu = do
     "n" -> newFriend >> mainMenu
     "v" -> viewFriends >> mainMenu
     "s" -> viewFriend >> mainMenu
-    "d" -> deleteFriend >> mainMenu
     "q" -> abort M.goodbye
     _ -> output "Invalid Option: please try again" >> mainMenu
 
